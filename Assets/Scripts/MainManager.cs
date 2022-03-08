@@ -10,18 +10,30 @@ public class MainManager : MonoBehaviour
     public int LineCount = 6;
     public Rigidbody Ball;
 
+    public Text highScoreText;
     public Text ScoreText;
     public GameObject GameOverText;
     
-    private bool m_Started = false;
     private int m_Points;
-    
+    private string m_Name;
+
+    private bool m_Started = false;
     private bool m_GameOver = false;
 
     
     // Start is called before the first frame update
     void Start()
     {
+
+        Debug.Log("calling menuManager Start");
+        Debug.Log(DataManager.Instance.highScore);
+        Debug.Log(DataManager.Instance.highscoreName);
+        m_Name = DataManager.Instance.currentName;
+        Debug.Log("game name: " + m_Name);
+
+        highScoreText.text = "Best Score: " + DataManager.Instance.highscoreName
+            + " = " + DataManager.Instance.highScore;
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -40,6 +52,19 @@ public class MainManager : MonoBehaviour
 
     private void Update()
     {
+
+        if(Input.GetKeyDown(KeyCode.Escape)) {
+            SceneManager.LoadScene(0);
+            return;
+        }
+
+        if(m_Points > DataManager.Instance.highScore) {
+
+            DataManager.Instance.highscoreName = m_Name;
+            ScoreText.text = "NEW HIGH SCORE!! " + DataManager.Instance.currentName
+                + " = " + m_Points;
+        }
+
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -52,9 +77,18 @@ public class MainManager : MonoBehaviour
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
+        
         }
         else if (m_GameOver)
         {
+
+            if(m_Points > DataManager.Instance.highScore) {
+
+                DataManager.Instance.highScore = m_Points;
+                DataManager.Instance.highscoreName = m_Name;
+                DataManager.Instance.SaveScore();
+            }
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
